@@ -7,10 +7,10 @@ class Schema
   # Schema の本体
   #
 
-  attr_reader :tasks, :qualifiers
+  attr_reader :features, :qualifiers
 
   def initialize
-    @tasks = []
+    @features = []
     @qualifiers = []
   end
 
@@ -19,7 +19,7 @@ class Schema
   end
 
   def clear
-    @tasks = []
+    @features = []
     @qualifiers = []
   end
 
@@ -28,8 +28,8 @@ class Schema
       Schema.instance.qualifiers
     end
 
-    def tasks
-      Schema.instance.tasks
+    def features
+      Schema.instance.features
     end
 
     def clear
@@ -53,6 +53,14 @@ class Schema
     end
   end
 
+  class Feature
+    attr_reader :key
+
+    def initialize(key)
+      @key = key
+    end
+  end
+
   #
   # トップレベルのDSL
   #
@@ -63,6 +71,21 @@ class Schema
       builder.instance_eval(&block)
     end
     @qualifiers << builder.build
+  end
+
+  def define_feature(key, &block)
+    builder = DefineFeature.new(key)
+    @features << builder.build
+  end
+
+  class DefineFeature
+    def initialize(key)
+      @key = key
+    end
+
+    def build
+      Feature.new(@key)
+    end
   end
 
   #

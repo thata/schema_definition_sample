@@ -9,8 +9,8 @@ class SchemaTest < ActiveSupport::TestCase
     assert_equal Schema.qualifiers, []
   end
 
-  test ".tasks" do
-    assert_equal Schema.tasks, []
+  test ".features" do
+    assert_equal Schema.features, []
   end
 
   test "Qualifierを定義できること" do
@@ -39,20 +39,22 @@ class SchemaTest < ActiveSupport::TestCase
   end
 
   test "Featureを定義できること" do
-    # common_rule_content = <<~CONTENT
-    #   define_feature 'source' do
-    #     url "https://www.ddbj.nig.ac.jp/ddbj/features-e.html#source"
-    #     qualifier :organism do
-    #       type :mandatory
-    #     end
-    #   end
-    # CONTENT
+    common_rule_content = <<~CONTENT
+      define_feature 'foo'
 
-    # # Qualifierの定義されたテキストを読み込む
-    # Schema.load_common_rules(common_rule_content)
+      # define_feature 'source' do
+      #   url "http://example.com/source"
+      #   qualifier :organism do
+      #     type :mandatory
+      #   end
+      # end
+    CONTENT
 
-    # # 2件のqualifierが定義されること
-    # assert_equal 2, Schema.qualifiers.count
+    # Featureが定義されたテキストを読み込む
+    Schema.load_common_rules(common_rule_content)
+
+    # 2件のqualifierが定義されること
+    assert_equal 1, Schema.features.count
 
     # # url, name, help_textが正しく設定されること
     # q = Schema.qualifiers[1]
