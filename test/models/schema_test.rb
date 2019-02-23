@@ -13,14 +13,14 @@ class SchemaTest < ActiveSupport::TestCase
     assert_equal Schema.tasks, []
   end
 
-  test "define_qualifierでQualifierが定義できること" do
+  test "Qualifierを定義できること" do
     common_rule_content = <<~CONTENT
-      define_qualifier :hello
+      define_qualifier :foo
 
-      define_qualifier :goodbye do
-        url 'http://example.com/goodbye'
-        name 'goodbye'
-        help_text 'goodbye world'
+      define_qualifier :organism do
+        url 'http://example.com/organism'
+        name 'organism'
+        help_text 'scientific name of the organism.'
       end
     CONTENT
 
@@ -32,10 +32,34 @@ class SchemaTest < ActiveSupport::TestCase
 
     # url, name, help_textが正しく設定されること
     q = Schema.qualifiers[1]
-    assert_equal :goodbye, q.key
-    assert_equal 'http://example.com/goodbye', q.url
-    assert_equal 'goodbye', q.name
-    assert_equal 'goodbye world', q.help_text
+    assert_equal :organism, q.key
+    assert_equal 'http://example.com/organism', q.url
+    assert_equal 'organism', q.name
+    assert_equal 'scientific name of the organism.', q.help_text
+  end
+
+  test "Featureを定義できること" do
+    # common_rule_content = <<~CONTENT
+    #   define_feature 'source' do
+    #     url "https://www.ddbj.nig.ac.jp/ddbj/features-e.html#source"
+    #     qualifier :organism do
+    #       type :mandatory
+    #     end
+    #   end
+    # CONTENT
+
+    # # Qualifierの定義されたテキストを読み込む
+    # Schema.load_common_rules(common_rule_content)
+
+    # # 2件のqualifierが定義されること
+    # assert_equal 2, Schema.qualifiers.count
+
+    # # url, name, help_textが正しく設定されること
+    # q = Schema.qualifiers[1]
+    # assert_equal :goodbye, q.key
+    # assert_equal 'http://example.com/goodbye', q.url
+    # assert_equal 'goodbye', q.name
+    # assert_equal 'goodbye world', q.help_text
   end
 end
 
