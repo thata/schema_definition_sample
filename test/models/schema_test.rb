@@ -42,24 +42,24 @@ class SchemaTest < ActiveSupport::TestCase
     common_rule_content = <<~CONTENT
       define_feature 'foo'
 
-      # define_feature 'source' do
-      #   url "http://example.com/source"
-      #   qualifier :organism do
-      #     type :mandatory
-      #   end
-      # end
+      define_feature 'source' do
+        url "http://example.com/source"
+        # qualifier :organism do
+        #   type :mandatory
+        # end
+      end
     CONTENT
 
     # Featureが定義されたテキストを読み込む
     Schema.load_common_rules(common_rule_content)
 
-    # 2件のqualifierが定義されること
-    assert_equal 1, Schema.features.count
+    # 2件のfeatureが定義されること
+    assert_equal 2, Schema.features.count
 
-    # # url, name, help_textが正しく設定されること
-    # q = Schema.qualifiers[1]
-    # assert_equal :goodbye, q.key
-    # assert_equal 'http://example.com/goodbye', q.url
+    # url, name, help_textが正しく設定されること
+    f = Schema.features[1]
+    assert_equal 'source', f.key
+    assert_equal 'http://example.com/source', f.url
     # assert_equal 'goodbye', q.name
     # assert_equal 'goodbye world', q.help_text
   end

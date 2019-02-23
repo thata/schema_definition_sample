@@ -54,10 +54,10 @@ class Schema
   end
 
   class Feature
-    attr_reader :key
+    attr_reader :key, :url
 
-    def initialize(key)
-      @key = key
+    def initialize(key, url)
+      @key, @url = key, url
     end
   end
 
@@ -75,16 +75,23 @@ class Schema
 
   def define_feature(key, &block)
     builder = DefineFeature.new(key)
+    if block_given?
+      builder.instance_eval(&block)
+    end
     @features << builder.build
   end
 
   class DefineFeature
     def initialize(key)
-      @key = key
+      @key, @url = key, nil
     end
 
     def build
-      Feature.new(@key)
+      Feature.new(@key, @url)
+    end
+
+    def url(val)
+      @url = val
     end
   end
 
