@@ -21,6 +21,7 @@ class SchemaTest < ActiveSupport::TestCase
         url 'http://example.com/organism'
         name 'organism'
         help_text 'scientific name of the organism.'
+        input_type 'list', ["known", "unknown"]
       end
     CONTENT
 
@@ -30,12 +31,13 @@ class SchemaTest < ActiveSupport::TestCase
     # 2件のqualifierが定義されること
     assert_equal 2, Schema.qualifiers.count
 
-    # url, name, help_textが正しく設定されること
+    # key, url, name, help_text, input_typeが正しく設定されること
     q = Schema.qualifiers[1]
     assert_equal :organism, q.key
     assert_equal 'http://example.com/organism', q.url
     assert_equal 'organism', q.name
     assert_equal 'scientific name of the organism.', q.help_text
+    assert_equal ['list', ['known', 'unknown']], q.input_type
   end
 
   test "Featureを定義できること" do
@@ -44,9 +46,12 @@ class SchemaTest < ActiveSupport::TestCase
 
       define_feature 'source' do
         url "http://example.com/source"
-        # qualifier :organism do
-        #   type :mandatory
-        # end
+        qualifier :organism do
+          type :mandatory
+        end
+        qualifier :product do
+          type :optional
+        end
       end
     CONTENT
 
@@ -56,12 +61,16 @@ class SchemaTest < ActiveSupport::TestCase
     # 2件のfeatureが定義されること
     assert_equal 2, Schema.features.count
 
-    # url, name, help_textが正しく設定されること
+    # key, urlが正しく設定されること
     f = Schema.features[1]
     assert_equal 'source', f.key
     assert_equal 'http://example.com/source', f.url
-    # assert_equal 'goodbye', q.name
-    # assert_equal 'goodbye world', q.help_text
+
+    # qualifiersが正しく設定されること
+    qualifiers = f.qualifiers
+    assert_equal 2, qualifiers.count
+    assert_equal :organism, qualifiers[0][:key]
+    assert_equal :mandatory, qualifiers[0][:constraint]
   end
 end
 

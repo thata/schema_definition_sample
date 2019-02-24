@@ -46,18 +46,26 @@ class Schema
   #
 
   class Qualifier
-    attr_reader :key, :url, :name, :help_text
+    attr_reader :key, :url, :name, :help_text, :input_type
 
-    def initialize(key, url, name, help_text)
-      @key, @url, @name, @help_text = key, url, name, help_text
+    def initialize(key, url, name, help_text, input_type)
+      @key, @url, @name, @help_text, @input_type = key, url, name, help_text, input_type
+    end
+
+    def to_s
+      "#<Schema::Qualifier key: \"#{@key}\", url: \"#{@url}\", name: \"#{@name}\", help_text: \"#{@help_text&.truncate(20, omission: '...')}\", input_type: #{@input_type}>"
     end
   end
 
   class Feature
-    attr_reader :key, :url
+    attr_reader :key, :url, :qualifiers
 
-    def initialize(key, url)
-      @key, @url = key, url
+    def initialize(key, url, qualifiers)
+      @key, @url, @qualifiers = key, url, qualifiers
+    end
+
+    def to_s
+      "#<Schema::Feature key: \"#{@key}\", url: \"#{@url}\", qualifiers: #{@qualifiers}}>"
     end
   end
 
@@ -83,15 +91,37 @@ class Schema
 
   class DefineFeature
     def initialize(key)
-      @key, @url = key, nil
+      @key, @url, @qualifiers = key, nil, []
     end
 
     def build
-      Feature.new(@key, @url)
+      Feature.new(@key, @url, @qualifiers)
     end
 
     def url(val)
       @url = val
+    end
+
+    def qualifier(key, &block)
+      builder = UseQualifier.new(key)
+      if block_given?
+        builder.instance_eval(&block)
+      end
+      @qualifiers << builder.build
+    end
+  end
+
+  class UseQualifier
+    def initialize(key)
+      @key, @type = key, nil
+    end
+
+    def build
+      {key: @key, constraint: @type}
+    end
+
+    def type(val)
+      @type = val
     end
   end
 
@@ -100,17 +130,18 @@ class Schema
   #
   class DefineQualifier
     def initialize(key)
-      @key, @url, @name, @help_text = key, nil, nil, nil
+      @key, @url, @name, @help_text, @input_type = key, nil, nil, nil, nil
     end
 
     def build
-      Qualifier.new(@key, @url, @name, @help_text)
+      Qualifier.new(@key, @url, @name, @help_text, @input_type)
     end
 
     # define_qualifier内で使用されるDSL
     # - url
     # - name
     # - help_text
+    # - input_type
 
     def url(val)
       @url = val
@@ -122,6 +153,10 @@ class Schema
 
     def help_text(val)
       @help_text = val
+    end
+
+    def input_type(type, val)
+      @input_type = [type, val]
     end
   end
 end
