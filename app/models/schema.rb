@@ -15,6 +15,7 @@ class Schema
   end
 
   def load_common_rules(common_rules_content)
+    # common_rules.rb の内容を評価する
     instance_eval(common_rules_content)
   end
 
@@ -73,22 +74,39 @@ class Schema
   # トップレベルのDSL
   #
 
+  #
+  # define_qualifier構文
+  #
   def define_qualifier(key, &block)
     builder = DefineQualifier.new(key)
+
     if block_given?
+      # define_qualifier に渡されたブロックの評価を行う
       builder.instance_eval(&block)
     end
+
+    # ブロック内で定義された内容を元にQualifierインスタンスを生成し、@qualifiersへ格納する
     @qualifiers << builder.build
   end
 
+  #
+  # define_feature構文
+  #
   def define_feature(key, &block)
     builder = DefineFeature.new(key)
+
     if block_given?
+      # define_feature に渡されたブロックの評価を行う
       builder.instance_eval(&block)
     end
+
+    # ブロック内で定義された内容を元にFeatureインスタンスを生成し、@features へ格納する
     @features << builder.build
   end
 
+  #
+  # define_feature構文内で使用されるDSLの定義、define_featureのブロックの評価結果の保持、および評価結果を元にしたfeatureインスタンス生成を担当する
+  #
   class DefineFeature
     def initialize(key)
       @key, @url, @qualifiers = key, nil, []
@@ -98,19 +116,32 @@ class Schema
       Feature.new(@key, @url, @qualifiers)
     end
 
+    #
+    # define_feature内で使用されるDSL
+    # - url
+    # - qualifier
+    #
+
     def url(val)
       @url = val
     end
 
     def qualifier(key, &block)
       builder = UseQualifier.new(key)
+
       if block_given?
+        # define_feature内のqualifierに渡されたブロックの評価を行う
         builder.instance_eval(&block)
       end
+
+      # ブロック内で定義された内容を元に生成された配列を
       @qualifiers << builder.build
     end
   end
 
+  #
+  # (define_qualifier内の) qualifier構文内で使用されるDSLの定義、qualifierのブロック評価結果の保持、および評価結果を元にしたハッシュオブジェクトの生成を担当する
+  #
   class UseQualifier
     def initialize(key)
       @key, @type = key, nil
@@ -120,13 +151,18 @@ class Schema
       {key: @key, constraint: @type}
     end
 
+    #
+    # (define_qualifier内の) qualifier構文内で使用されるDSL
+    # - type
+    #
+
     def type(val)
       @type = val
     end
   end
 
   #
-  # define_qualifier内のDSL
+  # define_qualifier構文内で使用されるDSLの定義、define_qualifierのブロックの評価結果の保持、および評価結果を元にしたqualifierインスタンス生成を担当する
   #
   class DefineQualifier
     def initialize(key)
@@ -137,11 +173,13 @@ class Schema
       Qualifier.new(@key, @url, @name, @help_text, @input_type)
     end
 
+    #
     # define_qualifier内で使用されるDSL
     # - url
     # - name
     # - help_text
     # - input_type
+    #
 
     def url(val)
       @url = val
